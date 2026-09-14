@@ -1,0 +1,21 @@
+# Exact pins for reproducible builds.
+#
+# numpy/scipy are split by Python version on purpose: this repo runs on Python
+# 3.14 locally but targets python:3.11-slim in Docker (spec section 10), and the
+# two ranges are DISJOINT — numpy 2.5 / scipy 1.18 require Python >=3.12, while
+# Python 3.11 tops out at numpy 2.4.6 / scipy 1.17.1. Environment markers keep the
+# pins exact on each interpreter instead of silently floating. (scipy is a
+# declared stack dependency but not yet imported anywhere, so the skew is inert;
+# numpy is used only via stable APIs — lstsq, column_stack, percentile, default_rng.)
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
+fastf1==3.8.3
+pandas==2.3.3
+numpy==2.5.3 ; python_version >= "3.12"
+numpy==2.4.6 ; python_version < "3.12"
+scipy==1.18.1 ; python_version >= "3.12"
+scipy==1.17.1 ; python_version < "3.12"
+matplotlib==3.11.2
+pytest==9.1.1
+httpx==0.28.1
+ruff==0.16.7

@@ -1,0 +1,13 @@
+# Build context is validation-service/.
+bin/
+obj/
+**/bin/
+**/obj/
+
+# Tests aren't needed in the runtime image.
+tests/
+
+.git
+.gitignore
+Dockerfile
+.dockerignore

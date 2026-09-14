@@ -1,0 +1,15 @@
+# Shared runtime config for the three demo services.
+# NEXT_PUBLIC_API_URL is listed here to match docker-compose, but Next.js inlines
+# NEXT_PUBLIC_* at image *build* time — changing this ConfigMap will not retarget
+# an already-built frontend image. Rebuild the frontend with the matching build-arg.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: f1-strategy-config
+  labels:
+    app.kubernetes.io/part-of: f1-strategy-sim
+data:
+  CORS_ORIGINS: "http://localhost:3000"
+  VALIDATION_ENABLED: "true"
+  VALIDATION_SERVICE_URL: "http://validation-service:8080"
+  NEXT_PUBLIC_API_URL: "http://localhost:8000"

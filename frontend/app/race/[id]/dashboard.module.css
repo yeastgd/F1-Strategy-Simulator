@@ -1,0 +1,26 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.crumbs {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.crumbs a {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.crumbs a:hover {
+  color: var(--text);
+}
+
+.raceId {
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: capitalize;
+}

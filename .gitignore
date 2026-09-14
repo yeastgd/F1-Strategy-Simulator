@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# FastF1 cache (regenerated on demand, can be large) — spec section 4
+backend/app/data/cache/
+
+# EDA output images
+backend/notebooks/*.png
+
+# Local logs
+*.log
+
+# Node / Next.js (frontend, later phases)
+node_modules/
+.next/
+
+# .NET (validation-service)
+bin/
+obj/
+
+# OS
+.DS_Store
+Thumbs.db

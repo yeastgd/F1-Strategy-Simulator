@@ -1,0 +1,28 @@
+.badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border: 1px solid transparent;
+}
+
+.low {
+  background: rgba(218, 41, 28, 0.18);
+  color: #ff9b93;
+  border-color: rgba(218, 41, 28, 0.5);
+}
+
+.medium {
+  background: rgba(232, 184, 0, 0.16);
+  color: #f2cf4d;
+  border-color: rgba(232, 184, 0, 0.5);
+}
+
+.high {
+  background: rgba(67, 176, 42, 0.16);
+  color: #7fd867;
+  border-color: rgba(67, 176, 42, 0.5);
+}

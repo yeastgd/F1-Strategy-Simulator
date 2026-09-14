@@ -1,0 +1,13 @@
+# Build context is frontend/. Keep node_modules/.next out so they're built fresh.
+node_modules
+.next
+npm-debug.log*
+
+# Local env (do not bake into the image; NEXT_PUBLIC_API_URL comes via build arg).
+.env.local
+.env*.local
+
+.git
+.gitignore
+Dockerfile
+.dockerignore

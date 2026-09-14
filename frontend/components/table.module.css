@@ -1,0 +1,55 @@
+.meta {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.table th {
+  color: var(--text-dim);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.name {
+  font-weight: 600;
+}
+
+.best {
+  background: rgba(67, 176, 42, 0.08);
+}
+
+.tag {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--good);
+  border: 1px solid rgba(67, 176, 42, 0.5);
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+
+.note {
+  color: var(--text-dim);
+  font-size: 12px;
+  margin: 12px 0 0;
+}

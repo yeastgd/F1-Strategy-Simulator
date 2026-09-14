@@ -1,0 +1,92 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 14px;
+}
+
+.cardHead {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.nameInput {
+  flex: 1;
+  font-weight: 600;
+}
+
+.iconBtn {
+  padding: 4px 8px;
+  line-height: 1;
+  color: var(--text-dim);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.label {
+  color: var(--text-dim);
+  font-size: 13px;
+  min-width: 54px;
+}
+
+.stops {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stopRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stopIdx {
+  color: var(--text-dim);
+  font-size: 12px;
+  min-width: 38px;
+}
+
+.stopRow input[type="number"] {
+  width: 62px;
+}
+
+.arrow {
+  color: var(--text-dim);
+}
+
+.addStop {
+  align-self: flex-start;
+  font-size: 13px;
+  padding: 4px 10px;
+  color: var(--text-dim);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.availNote {
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.errorWrap {
+  margin-top: 14px;
+}
