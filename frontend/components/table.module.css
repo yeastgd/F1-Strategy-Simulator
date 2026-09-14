@@ -1,11 +1,41 @@
 .meta {
-  color: var(--text-dim);
+  color: var(--silver);
   font-size: 13px;
   margin: 0 0 12px;
+  font-family: var(--font-data), ui-monospace, monospace;
+  overflow-wrap: anywhere;
+}
+
+.scrollerWrap {
+  position: relative;
+}
+
+.scroller {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+.scrollerWrap::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 28px;
+  pointer-events: none;
+  background: linear-gradient(to left, var(--bg), transparent);
+}
+
+@media (min-width: 768px) {
+  .scrollerWrap::after {
+    display: none;
+  }
 }
 
 .table {
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
   font-size: 14px;
 }
@@ -13,43 +43,66 @@
 .table th,
 .table td {
   text-align: left;
-  padding: 9px 12px;
-  border-bottom: 1px solid var(--border);
+  padding: 8px 8px 8px 0;
+  border-bottom: 1px solid var(--hairline);
+  white-space: nowrap;
 }
 
 .table th {
-  color: var(--text-dim);
-  font-weight: 600;
+  color: var(--silver);
+  font-weight: 500;
   font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+}
+
+.pin {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--bg);
+  min-width: 7.25rem;
+  max-width: 9.5rem;
+  padding-right: 12px;
+  border-right: 1px solid var(--hairline);
+  white-space: normal;
+}
+
+.table thead .pin {
+  z-index: 2;
 }
 
 .num {
   text-align: right;
+  font-family: var(--font-data), ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
 }
 
 .name {
   font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
 }
 
-.best {
-  background: rgba(67, 176, 42, 0.08);
+.focused .name,
+.focused .num {
+  color: var(--teal);
+}
+
+.table tbody tr {
+  cursor: pointer;
 }
 
 .tag {
-  margin-left: 8px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--good);
-  border: 1px solid rgba(67, 176, 42, 0.5);
-  border-radius: 999px;
-  padding: 1px 7px;
+  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  color: var(--teal);
 }
 
 .note {
-  color: var(--text-dim);
+  color: var(--silver);
   font-size: 12px;
   margin: 12px 0 0;
 }

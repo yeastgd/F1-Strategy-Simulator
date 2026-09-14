@@ -115,15 +115,3 @@ export const getLaps = (raceId: string) =>
 
 export const postSimulate = (body: SimulateRequest) =>
   getJSON<SimulateResponse>("/simulate", { method: "POST", body: JSON.stringify(body) });
-
-// Shared F1 compound colours (used across the charts).
-export const COMPOUND_COLORS: Record<string, string> = {
-  SOFT: "#da291c",
-  MEDIUM: "#e8b800",
-  HARD: "#7a7a7a",
-  INTERMEDIATE: "#43b02a",
-  WET: "#0067ad",
-};
-
-export const compoundColor = (compound: string): string =>
-  COMPOUND_COLORS[compound.toUpperCase()] ?? "#555555";

@@ -1,28 +1,98 @@
-.badge {
-  display: inline-block;
-  padding: 1px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  border: 1px solid transparent;
+.tag {
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .low {
-  background: rgba(218, 41, 28, 0.18);
-  color: #ff9b93;
-  border-color: rgba(218, 41, 28, 0.5);
+  color: var(--amber);
 }
 
-.medium {
-  background: rgba(232, 184, 0, 0.16);
-  color: #f2cf4d;
-  border-color: rgba(232, 184, 0, 0.5);
-}
-
+.medium,
 .high {
-  background: rgba(67, 176, 42, 0.16);
-  color: #7fd867;
-  border-color: rgba(67, 176, 42, 0.5);
+  color: var(--silver);
+}
+
+.tyreDot {
+  display: inline-block;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.tyreDotHard {
+  box-shadow: 0 0 0 1px #6a6a6a;
+}
+
+.compoundSelect {
+  position: relative;
+  display: inline-block;
+}
+
+.compoundBtn,
+.compoundOption {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 0;
+}
+
+.compoundBtn {
+  padding: 10px 12px;
+  min-height: 44px;
+  background: var(--bg);
+  color: var(--white);
+  border: 1px solid var(--hairline);
+}
+
+.compoundMenu {
+  position: absolute;
+  z-index: 4;
+  top: calc(100% + 2px);
+  left: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--hairline);
+}
+
+.compoundOption {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 10px 12px;
+  min-height: 44px;
+  border: none;
+  background: transparent;
+  color: var(--white);
+}
+
+.compoundOption:hover,
+.compoundOption[aria-selected="true"] {
+  background: color-mix(in srgb, var(--silver) 10%, transparent);
+}
+
+.stints {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.stint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.stintArrow {
+  color: var(--silver);
+  font-weight: 400;
+  margin: 0 2px;
 }

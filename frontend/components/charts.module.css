@@ -1,32 +1,130 @@
 .legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px 18px;
   margin-top: 8px;
   font-size: 13px;
+  color: var(--silver);
 }
 
 .legendItem {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  font-weight: 500;
 }
 
 .swatch {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
+  width: 18px;
+  height: 2px;
   display: inline-block;
 }
 
+.swatchDash {
+  width: 18px;
+  height: 0;
+  display: inline-block;
+  border-top: 2px dashed;
+}
+
 .floored {
-  color: var(--warn);
-  font-style: italic;
+  color: var(--silver);
   font-size: 12px;
+  font-style: normal;
 }
 
 .caption {
-  color: var(--text-dim);
+  color: var(--silver);
   font-size: 12px;
   margin: 10px 0 0;
+}
+
+.chartFrame {
+  position: relative;
+  height: 380px;
+  width: 100%;
+  min-width: 0;
+  --plot-top: 8px;
+  --plot-right: 16px;
+  --plot-bottom: 28px;
+  --plot-left: 72px;
+}
+
+.markerLayer {
+  position: absolute;
+  top: var(--plot-top);
+  right: var(--plot-right);
+  bottom: var(--plot-bottom);
+  left: var(--plot-left);
+  pointer-events: none;
+}
+
+.marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1px solid currentColor;
+  transform: translateX(-0.5px);
+}
+
+.markerLabel {
+  position: absolute;
+  top: 0;
+  left: 5px;
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1;
+  color: inherit;
+}
+
+.stint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  color: var(--silver);
+  font-size: 11px;
+}
+
+.plot {
+  width: 100%;
+  min-width: 0;
+  height: 300px;
+}
+
+@media (max-width: 600px) {
+  .chartFrame {
+    height: 280px;
+    --plot-top: 8px;
+    --plot-right: 8px;
+    --plot-bottom: 22px;
+    --plot-left: 40px;
+  }
+
+  .plot {
+    height: 240px;
+  }
+
+  .legend {
+    gap: 8px 12px;
+    font-size: 12px;
+  }
+
+  .legendItem {
+    gap: 6px;
+  }
+
+  .stint {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+
+  .markerLabel {
+    font-size: 10px;
+  }
+
+  .caption {
+    font-size: 11px;
+  }
 }

@@ -10,69 +10,45 @@ export default function HomePage() {
   const router = useRouter();
   const [races, setRaces] = useState<RaceSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<string>("");
 
   useEffect(() => {
     getRaces()
-      .then((data) => {
-        setRaces(data);
-        if (data.length) setSelected(data[0].id);
-      })
+      .then(setRaces)
       .catch((e: Error) => setError(e.message));
   }, []);
 
   return (
-    <div className={styles.wrap}>
-      <div className="panel">
-        <h2>Pick a race</h2>
-        <p className="hint">
-          Choose one of the processed 2023 races to open its degradation model and strategy
-          simulator.
-        </p>
+    <div className={styles.page}>
+      <svg className={styles.track} viewBox="0 0 800 400" aria-hidden="true">
+        <path
+          d="M80 220 C80 140 140 80 280 90 C420 100 460 70 540 90 C680 120 720 180 700 240 C680 300 560 330 420 320 C280 310 200 340 140 300 C90 268 80 250 80 220 Z"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="10"
+        />
+      </svg>
 
-        {error && <ErrorBox message={error} />}
-        {!error && !races && <Loading label="Loading races…" />}
+      <h1 className={styles.heading}>Select race</h1>
 
-        {races && (
-          <>
-            <div className={styles.controls}>
-              <select
-                value={selected}
-                onChange={(e) => setSelected(e.target.value)}
-                aria-label="Select a race"
-              >
-                {races.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.year} {r.gp} — {r.laps} laps
-                  </option>
-                ))}
-              </select>
-              <button
-                className="primary"
-                disabled={!selected}
-                onClick={() => router.push(`/race/${selected}`)}
-              >
-                Open dashboard →
+      {error && <ErrorBox message={error} />}
+      {!error && !races && <Loading label="Loading races…" />}
+
+      {races && (
+        <ul className={styles.list}>
+          {races.map((r) => (
+            <li key={r.id}>
+              <button className={styles.race} onClick={() => router.push(`/race/${r.id}`)}>
+                <span className={styles.gp}>{r.gp}</span>
+                <span className={styles.rule} />
+                <span className={styles.meta}>
+                  <span className={styles.year}>{r.year}</span>
+                  <span className={styles.laps}>{r.laps} laps</span>
+                </span>
               </button>
-            </div>
-
-            <div className={styles.cards}>
-              {races.map((r) => (
-                <button
-                  key={r.id}
-                  className={styles.card}
-                  onClick={() => router.push(`/race/${r.id}`)}
-                >
-                  <span className={styles.cardGp}>{r.gp}</span>
-                  <span className={styles.cardMeta}>
-                    {r.year} · {r.laps} laps
-                  </span>
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

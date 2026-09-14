@@ -1,14 +1,24 @@
 "use client";
 
+import { memo } from "react";
 import type { SimulateResponse } from "@/lib/api";
-import { ConfidenceBadge } from "@/components/ui";
+import { CompoundStints, ConfidenceBadge } from "@/components/ui";
 import styles from "./table.module.css";
 
-export default function StrategyComparisonTable({ result }: { result: SimulateResponse }) {
+function StrategyComparisonTable({
+  result,
+  stintsByName = {},
+  focusedName,
+  onFocus,
+}: {
+  result: SimulateResponse;
+  stintsByName?: Record<string, string[]>;
+  focusedName?: string | null;
+  onFocus?: (name: string) => void;
+}) {
   const names = Object.keys(result.strategies);
   const fastest = Math.min(...names.map((n) => result.strategies[n].mean_time));
 
-  // Average win probability against all other strategies.
   const avgWin = (name: string): number => {
     const row = result.win_probability[name] ?? {};
     const opps = Object.values(row);
@@ -16,7 +26,9 @@ export default function StrategyComparisonTable({ result }: { result: SimulateRe
     return opps.reduce((a, b) => a + b, 0) / opps.length;
   };
 
-  const ranked = [...names].sort((a, b) => result.strategies[a].mean_time - result.strategies[b].mean_time);
+  const ranked = [...names].sort(
+    (a, b) => result.strategies[a].mean_time - result.strategies[b].mean_time
+  );
 
   return (
     <div>
@@ -24,10 +36,13 @@ export default function StrategyComparisonTable({ result }: { result: SimulateRe
         {result.meta.race_laps} laps · pit loss {result.meta.pit_loss.toFixed(1)}s · SC probability{" "}
         {(result.meta.sc_probability * 100).toFixed(1)}% · {result.meta.n_runs.toLocaleString()} runs
       </p>
-      <table className={styles.table}>
+      <div className={styles.scrollerWrap}>
+        <div className={styles.scroller}>
+          <table className={styles.table}>
         <thead>
           <tr>
-            <th>Strategy</th>
+            <th className={styles.pin}>Strategy</th>
+            <th>Tyres</th>
             <th>Stops</th>
             <th>Mean (rel s)</th>
             <th>Δ to best</th>
@@ -40,13 +55,21 @@ export default function StrategyComparisonTable({ result }: { result: SimulateRe
           {ranked.map((name) => {
             const s = result.strategies[name];
             const delta = s.mean_time - fastest;
+            const focused = name === focusedName;
             return (
-              <tr key={name} className={delta === 0 ? styles.best : undefined}>
-                <td className={styles.name}>
+              <tr
+                key={name}
+                className={focused ? styles.focused : undefined}
+                onClick={() => onFocus?.(name)}
+              >
+                <td className={`${styles.name} ${styles.pin}`}>
                   {name}
                   {delta === 0 && <span className={styles.tag}>fastest</span>}
                 </td>
-                <td>{s.n_stops}</td>
+                <td>
+                  {stintsByName[name] ? <CompoundStints compounds={stintsByName[name]} /> : "—"}
+                </td>
+                <td className={styles.num}>{s.n_stops}</td>
                 <td className={styles.num}>{s.mean_time.toFixed(1)}</td>
                 <td className={styles.num}>{delta === 0 ? "—" : `+${delta.toFixed(1)}`}</td>
                 <td className={styles.num}>{s.std.toFixed(2)}</td>
@@ -58,12 +81,16 @@ export default function StrategyComparisonTable({ result }: { result: SimulateRe
             );
           })}
         </tbody>
-      </table>
+          </table>
+        </div>
+      </div>
       <p className={styles.note}>
         &ldquo;Avg win %&rdquo; = share of paired simulated races this strategy finishes ahead of the
         others (common random numbers). Confidence reflects the lowest-confidence compound the
-        strategy relies on.
+        strategy relies on. Click a row to focus it.
       </p>
     </div>
   );
 }
+
+export default memo(StrategyComparisonTable);

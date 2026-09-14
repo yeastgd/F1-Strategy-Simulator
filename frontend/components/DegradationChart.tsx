@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useMemo } from "react";
 import {
   CartesianGrid,
   ComposedChart,
@@ -10,8 +11,27 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { compoundColor, type DegradationResponse, type LapPoint } from "@/lib/api";
+import type { DegradationResponse, LapPoint } from "@/lib/api";
+import { tyreColor, tyreNeedsOutline } from "@/lib/tyreColors";
+import { useChartReady, useNarrow } from "@/lib/useNarrow";
 import styles from "./charts.module.css";
+
+const SILVER = "#C9CDD3";
+const WHITE = "#F5F6F7";
+const BG = "#0A0A0A";
+
+export interface PitMarker {
+  lap: number;
+  compound: string;
+}
+
+interface Series {
+  compound: string;
+  color: string;
+  points: { x: number; y: number }[];
+  fit: { x: number; y: number }[] | null;
+  floored: boolean;
+}
 
 function quantile(sortedAsc: number[], q: number): number {
   if (sortedAsc.length === 0) return 0;
@@ -22,103 +42,213 @@ function quantile(sortedAsc: number[], q: number): number {
   return next !== undefined ? sortedAsc[base] + rest * (next - sortedAsc[base]) : sortedAsc[base];
 }
 
+const InnerChart = memo(function InnerChart({
+  series,
+  xMax,
+  yLo,
+  yHi,
+  narrow,
+  height,
+}: {
+  series: Series[];
+  xMax: number;
+  yLo: number;
+  yHi: number;
+  narrow: boolean;
+  height: number;
+}) {
+  const tick = {
+    fill: SILVER,
+    fontSize: narrow ? 9 : 11,
+    fontFamily: "var(--font-data), ui-monospace, monospace",
+  };
+  const yWidth = narrow ? 36 : 68;
+
+  return (
+    <ResponsiveContainer width="100%" height={height} debounce={50}>
+      <ComposedChart
+        margin={narrow ? { top: 8, right: 8, bottom: 22, left: 4 } : { top: 8, right: 16, bottom: 28, left: 4 }}
+      >
+        <CartesianGrid stroke={SILVER} strokeOpacity={0.12} vertical={false} />
+        <XAxis
+          type="number"
+          dataKey="x"
+          domain={[0, xMax]}
+          tick={tick}
+          interval={narrow ? "preserveStartEnd" : undefined}
+          axisLine={{ stroke: SILVER, strokeOpacity: 0.35 }}
+          tickLine={false}
+          label={{
+            value: narrow ? "Lap" : "Tyre age / race lap",
+            position: "insideBottom",
+            offset: -12,
+            fill: SILVER,
+            fontSize: narrow ? 10 : 12,
+          }}
+        />
+        <YAxis
+          type="number"
+          dataKey="y"
+          domain={[yLo, yHi]}
+          allowDataOverflow
+          tick={tick}
+          width={yWidth}
+          axisLine={{ stroke: SILVER, strokeOpacity: 0.35 }}
+          tickLine={false}
+          label={
+            narrow
+              ? undefined
+              : {
+                  value: "Lap time (s)",
+                  angle: -90,
+                  position: "insideLeft",
+                  fill: SILVER,
+                  fontSize: 12,
+                }
+          }
+        />
+        <Tooltip
+          contentStyle={{
+            background: BG,
+            border: `1px solid ${SILVER}`,
+            borderRadius: 0,
+            color: WHITE,
+            fontFamily: "var(--font-data), ui-monospace, monospace",
+            fontSize: 12,
+          }}
+          formatter={(v: number) => [`${Number(v).toFixed(2)} s`, "lap time"]}
+          labelFormatter={(l) => `Lap ${l}`}
+        />
+        {series.map((s) => (
+          <Scatter
+            key={`sc-${s.compound}`}
+            data={s.points}
+            fill={s.color}
+            fillOpacity={tyreNeedsOutline(s.compound) ? 0.35 : 0.22}
+            stroke={tyreNeedsOutline(s.compound) ? "#1a1a1a" : undefined}
+            isAnimationActive={false}
+          />
+        ))}
+        {series.map((s) =>
+          s.fit ? (
+            <Line
+              key={`ln-${s.compound}`}
+              data={s.fit}
+              dataKey="y"
+              stroke={s.color}
+              strokeWidth={s.floored ? 2 : 2.4}
+              dot={false}
+              type="linear"
+              strokeDasharray={s.floored ? "6 4" : undefined}
+              isAnimationActive={false}
+            />
+          ) : null
+        )}
+      </ComposedChart>
+    </ResponsiveContainer>
+  );
+});
+
 export default function DegradationChart({
   laps,
   degradation,
+  raceLaps,
+  markers = [],
 }: {
   laps: LapPoint[];
   degradation: DegradationResponse;
+  raceLaps: number;
+  markers?: PitMarker[];
 }) {
-  if (laps.length === 0) return <p className={styles.caption}>No lap data for this race.</p>;
+  const narrow = useNarrow();
+  const ready = useChartReady();
+  const height = narrow ? 280 : 380;
+  const model = useMemo(() => {
+    if (laps.length === 0) return null;
+    const compounds = Array.from(new Set(laps.map((l) => l.compound.toUpperCase()))).sort();
+    const lifeMax = Math.max(...laps.map((l) => l.tyre_life), 1);
+    const sortedTimes = [...laps.map((l) => l.lap_time)].sort((a, b) => a - b);
+    const yLo = Math.floor(quantile(sortedTimes, 0.02)) - 0.5;
+    const yHi = Math.ceil(quantile(sortedTimes, 0.97)) + 0.5;
+    const xMax = Math.max(Math.ceil(lifeMax), raceLaps, 1);
 
-  const compounds = Array.from(new Set(laps.map((l) => l.compound.toUpperCase()))).sort();
-  const lifeMax = Math.max(...laps.map((l) => l.tyre_life), 1);
-  const sortedTimes = [...laps.map((l) => l.lap_time)].sort((a, b) => a - b);
-  const yLo = Math.floor(quantile(sortedTimes, 0.02)) - 0.5;
-  const yHi = Math.ceil(quantile(sortedTimes, 0.97)) + 0.5;
+    const series: Series[] = compounds.map((c) => {
+      const fitModel = degradation[c];
+      const floored = fitModel?.was_floored ?? false;
+      const color = tyreColor(c);
+      return {
+        compound: c,
+        color,
+        points: laps
+          .filter((l) => l.compound.toUpperCase() === c)
+          .map((l) => ({ x: l.tyre_life, y: l.lap_time })),
+        fit: fitModel
+          ? [
+              { x: 1, y: fitModel.base_pace + fitModel.deg_rate * 1 },
+              { x: lifeMax, y: fitModel.base_pace + fitModel.deg_rate * lifeMax },
+            ]
+          : null,
+        floored,
+      };
+    });
 
-  const series = compounds.map((c) => {
-    const model = degradation[c];
-    return {
-      compound: c,
-      color: compoundColor(c),
-      points: laps
-        .filter((l) => l.compound.toUpperCase() === c)
-        .map((l) => ({ x: l.tyre_life, y: l.lap_time })),
-      fit: model
-        ? [
-            { x: 1, y: model.base_pace + model.deg_rate * 1 },
-            { x: lifeMax, y: model.base_pace + model.deg_rate * lifeMax },
-          ]
-        : null,
-      floored: model?.was_floored ?? false,
-    };
-  });
-  const anyFloored = series.some((s) => s.floored);
+    return { series, xMax, yLo, yHi };
+  }, [laps, degradation, raceLaps]);
+
+  if (!model) return <p className={styles.caption}>No lap data for this race.</p>;
+
+  const { series, xMax, yLo, yHi } = model;
 
   return (
     <div>
-      <ResponsiveContainer width="100%" height={340}>
-        <ComposedChart margin={{ top: 10, right: 24, bottom: 24, left: 8 }}>
-          <CartesianGrid stroke="#2c333f" strokeDasharray="3 3" />
-          <XAxis
-            type="number"
-            dataKey="x"
-            domain={[0, Math.ceil(lifeMax)]}
-            tick={{ fill: "#9aa3b2", fontSize: 12 }}
-            label={{ value: "Tyre age (laps)", position: "insideBottom", offset: -10, fill: "#9aa3b2", fontSize: 12 }}
+      <div className={styles.chartFrame} style={{ height }}>
+        {ready && (
+          <InnerChart
+            key={narrow ? "narrow" : "wide"}
+            series={series}
+            xMax={xMax}
+            yLo={yLo}
+            yHi={yHi}
+            narrow={narrow}
+            height={height}
           />
-          <YAxis
-            type="number"
-            dataKey="y"
-            domain={[yLo, yHi]}
-            allowDataOverflow
-            tick={{ fill: "#9aa3b2", fontSize: 12 }}
-            width={64}
-            label={{ value: "Lap time (s)", angle: -90, position: "insideLeft", fill: "#9aa3b2", fontSize: 12 }}
-          />
-          <Tooltip
-            contentStyle={{ background: "#1a1d24", border: "1px solid #2c333f", borderRadius: 8 }}
-            formatter={(v: number) => [`${Number(v).toFixed(2)} s`, "lap time"]}
-            labelFormatter={(l) => `Tyre age ${l}`}
-          />
-          {series.map((s) => (
-            <Scatter key={`sc-${s.compound}`} data={s.points} fill={s.color} fillOpacity={0.2} isAnimationActive={false} />
+        )}
+        <div className={styles.markerLayer} aria-hidden>
+          {markers.map((m, i) => (
+            <div
+              key={`${i}-${m.compound}`}
+              className={styles.marker}
+              style={{
+                left: `${(m.lap / xMax) * 100}%`,
+                borderColor: tyreColor(m.compound),
+                color: tyreColor(m.compound),
+              }}
+            >
+              <span className={styles.markerLabel}>{m.lap}</span>
+            </div>
           ))}
-          {series.map((s) =>
-            s.fit ? (
-              <Line
-                key={`ln-${s.compound}`}
-                data={s.fit}
-                dataKey="y"
-                stroke={s.color}
-                strokeWidth={2.5}
-                dot={false}
-                type="linear"
-                strokeDasharray={s.floored ? "7 4" : undefined}
-                isAnimationActive={false}
-              />
-            ) : null
-          )}
-        </ComposedChart>
-      </ResponsiveContainer>
+        </div>
+      </div>
 
       <div className={styles.legend}>
         {series.map((s) => (
           <span key={s.compound} className={styles.legendItem}>
-            <span className={styles.swatch} style={{ background: s.color }} />
+            <span
+              className={s.floored ? styles.swatchDash : styles.swatch}
+              style={
+                s.floored
+                  ? { borderColor: s.color }
+                  : {
+                      background: s.color,
+                      boxShadow: tyreNeedsOutline(s.compound) ? "0 0 0 1px #3a3a3a" : undefined,
+                    }
+              }
+            />
             {s.compound}
-            {s.floored && <em className={styles.floored}>&nbsp;(deg floored → dashed)</em>}
+            {s.floored && <span className={styles.floored}>floored</span>}
           </span>
         ))}
       </div>
-      {anyFloored && (
-        <p className={styles.caption}>
-          Faint dots are individual laps; the line is the fitted degradation. A{" "}
-          <strong>dashed</strong> line means the fitted slope was negative and floored to 0 — flat
-          here means &ldquo;no modelled wear&rdquo;, not real zero-deg tyres.
-        </p>
-      )}
     </div>
   );
 }

@@ -1,14 +1,22 @@
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 14px;
+  grid-template-columns: 1fr;
+  gap: 28px;
+}
+
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
 }
 
 .card {
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  padding: 14px;
+  padding: 0 0 0 10px;
+  border-left: 2px solid transparent;
+}
+
+.cardFocused {
+  border-left-color: var(--teal);
 }
 
 .cardHead {
@@ -20,12 +28,18 @@
 .nameInput {
   flex: 1;
   font-weight: 600;
+  border: none;
+  border-bottom: 1px solid var(--hairline);
+  padding-left: 0;
 }
 
 .iconBtn {
   padding: 4px 8px;
   line-height: 1;
-  color: var(--text-dim);
+  color: var(--silver);
+  border: none;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .row {
@@ -36,7 +50,7 @@
 }
 
 .label {
-  color: var(--text-dim);
+  color: var(--silver);
   font-size: 13px;
   min-width: 54px;
 }
@@ -44,49 +58,144 @@
 .stops {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 14px;
 }
 
-.stopRow {
+.stopBlock {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 6px;
 }
 
-.stopIdx {
-  color: var(--text-dim);
-  font-size: 12px;
-  min-width: 38px;
+.stopHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.stopRow input[type="number"] {
-  width: 62px;
+.stopIdx {
+  color: var(--silver);
+  font-size: 12px;
+}
+
+.sliderRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  margin: 0;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.slider::-webkit-slider-runnable-track {
+  height: 2px;
+  background: var(--hairline);
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -6px;
+  background: var(--teal);
+  border: none;
+  border-radius: 0;
+}
+
+.slider::-moz-range-track {
+  height: 2px;
+  background: var(--hairline);
+}
+
+.slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--teal);
+  border: none;
+  border-radius: 0;
+}
+
+.lapReadout {
+  min-width: 2.2ch;
+  font-family: var(--font-data);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--white);
+  text-align: right;
+}
+
+.stopCompound {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .arrow {
-  color: var(--text-dim);
+  color: var(--silver);
 }
 
 .addStop {
   align-self: flex-start;
   font-size: 13px;
-  padding: 4px 10px;
-  color: var(--text-dim);
+  padding: 4px 0;
+  color: var(--silver);
+  border: none;
+  min-height: 44px;
 }
 
 .actions {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 16px;
+  gap: 16px;
+  margin-top: 20px;
   flex-wrap: wrap;
 }
 
 .availNote {
-  color: var(--text-dim);
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  color: var(--silver);
   font-size: 12px;
+}
+
+.availItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  color: var(--white);
 }
 
 .errorWrap {
   margin-top: 14px;
+}
+
+@media (max-width: 600px) {
+  .stopCompound {
+    flex-wrap: wrap;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .lapReadout {
+    font-size: 16px;
+    min-width: 2.6ch;
+  }
 }
