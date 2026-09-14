@@ -9,6 +9,7 @@ simulation docstring), so it is inflated vs a real race time and should be read 
 a *relative* comparison between strategies, not a literal finish-time prediction.
 """
 
+import logging
 import os
 from pathlib import Path
 
@@ -34,35 +35,38 @@ DEFAULT_SEED = 20230914
 # .NET validation-service integration (PROJECT_SPEC.md section 9). Disabled by
 # default so local dev / tests don't need the service running; docker-compose sets
 # VALIDATION_ENABLED=true and points VALIDATION_SERVICE_URL at the service.
-VALIDATION_SERVICE_URL = os.getenv("VALIDATION_SERVICE_URL", "http://validation-service:8080")
-
 router = APIRouter()
+log = logging.getLogger(__name__)
 
 
 def _validation_enabled() -> bool:
     return os.getenv("VALIDATION_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _validation_service_url() -> str:
+    return os.getenv("VALIDATION_SERVICE_URL", "http://validation-service:8080")
+
+
 def _validate_remote(strategy: "StrategyIn", race_laps: int) -> tuple[bool, str | None]:
     """Ask the .NET validation-service whether a strategy is legal.
 
-    Returns ``(valid, reason)``. Raises HTTPException(503) if the service can't be
-    reached, so an enabled-but-down validator fails closed rather than silently
-    letting an unvalidated strategy through.
+    Returns ``(valid, reason)``. The validator is optional (section 9): if it
+    cannot be reached (cold Render box, 502, timeout), we skip it and let the
+    Python simulator's own structural checks run. A live ``valid: false`` still
+    rejects the request.
     """
     payload = {
         "race_laps": race_laps,
         "start_compound": strategy.start_compound,
         "stops": [{"lap": s.lap, "compound": s.compound} for s in strategy.stops],
     }
-    url = VALIDATION_SERVICE_URL.rstrip("/") + "/validate"
+    url = _validation_service_url().rstrip("/") + "/validate"
     try:
         resp = httpx.post(url, json=payload, timeout=5.0)
         resp.raise_for_status()
     except httpx.HTTPError as exc:
-        raise HTTPException(
-            status_code=503, detail=f"Strategy validation service unavailable: {exc}"
-        ) from exc
+        log.warning("Validation service unavailable (%s); simulating without it", exc)
+        return True, None
     body = resp.json()
     return bool(body.get("valid", False)), body.get("reason")
 

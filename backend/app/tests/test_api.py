@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from fastapi.testclient import TestClient
+import httpx
 
 from app.main import app
 
@@ -124,6 +125,25 @@ def test_simulate_rejected_by_validation_service(monkeypatch):
     assert "one-compound" in detail  # strategy name surfaced
     assert "2 different compounds" in detail  # .NET reason surfaced
     assert sim_calls["count"] == 0  # no simulation ran
+
+
+def test_simulate_runs_when_validator_is_down(monkeypatch):
+    """A 502/timeout from the optional .NET service must not block simulation."""
+    from app.api import routes
+
+    def fake_post(*args, **kwargs):
+        request = httpx.Request("POST", "https://example.test/validate")
+        return httpx.Response(502, request=request, text="Bad Gateway")
+
+    monkeypatch.setattr(routes, "_validation_enabled", lambda: True)
+    monkeypatch.setattr(routes.httpx, "post", fake_post)
+
+    resp = client.post(
+        "/simulate",
+        json={"race_id": "2023_Monza", "strategies": MONZA_STRATEGIES, "n_runs": 400},
+    )
+    assert resp.status_code == 200
+    assert set(resp.json()["strategies"]) == {"1-stop early(26)", "2-stop M-H-H"}
 
 
 def test_simulate_duplicate_names_returns_400():
