@@ -1,21 +1,8 @@
 .page {
   position: relative;
   min-height: calc(100vh - 80px);
-  max-width: 920px;
+  max-width: 1080px;
   min-width: 0;
-  overflow: hidden;
-}
-
-.track {
-  position: absolute;
-  top: 40px;
-  right: 0;
-  width: min(720px, 70vw);
-  height: auto;
-  color: var(--silver);
-  opacity: 0.05;
-  pointer-events: none;
-  z-index: 0;
 }
 
 .heading {
@@ -37,23 +24,15 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 28px;
-}
-
-@media (min-width: 600px) {
-  .list {
-    /* Timing-screen stack stays one column; this breakpoint is reserved
-       so we never snap into a card row on tablet. */
-    flex-direction: column;
-  }
+  gap: 8px;
 }
 
 .race {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(140px, 38%);
+  align-items: center;
+  gap: 16px 28px;
+  padding: 12px 0;
   border: none;
   background: none;
   color: inherit;
@@ -62,9 +41,12 @@
   min-height: 44px;
 }
 
-.race:hover .gp,
-.race:focus-visible .gp {
-  color: var(--white);
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
 }
 
 .gp {
@@ -74,6 +56,14 @@
   line-height: 0.9;
   text-transform: uppercase;
   overflow-wrap: anywhere;
+  transform-origin: left center;
+  transition: transform 90ms linear;
+}
+
+.race:hover .gp,
+.race:focus .gp,
+.race:focus-visible .gp {
+  transform: scale(1.08);
 }
 
 .rule {
@@ -82,6 +72,13 @@
   max-width: min(280px, 100%);
   height: 2px;
   background: var(--teal);
+  transition: max-width 90ms linear;
+}
+
+.race:hover .rule,
+.race:focus .rule,
+.race:focus-visible .rule {
+  max-width: min(420px, 100%);
 }
 
 .meta {
@@ -93,4 +90,48 @@
 
 .laps {
   font-family: var(--font-data), ui-monospace, monospace;
+}
+
+.track {
+  width: 100%;
+  height: auto;
+  color: var(--silver);
+  opacity: 0.14;
+  pointer-events: none;
+  transition: opacity 90ms linear, color 90ms linear;
+}
+
+.race:hover .track,
+.race:focus .track,
+.race:focus-visible .track {
+  opacity: 0.55;
+  color: var(--white);
+}
+
+@media (max-width: 600px) {
+  .race {
+    position: relative;
+    grid-template-columns: 1fr;
+    padding: 16px 0;
+  }
+
+  .copy {
+    position: relative;
+    z-index: 1;
+  }
+
+  .track {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: min(200px, 58%);
+    opacity: 0.08;
+  }
+
+  .race:hover .track,
+  .race:focus .track,
+  .race:focus-visible .track {
+    opacity: 0.28;
+  }
 }
