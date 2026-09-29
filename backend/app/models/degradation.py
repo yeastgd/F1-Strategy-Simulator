@@ -201,10 +201,13 @@ def build_degradation_model(race_id: str, processed_dir: str | Path = PROCESSED_
 
 
 def main() -> None:
-    """Fit + print the degradation table for the three reference races."""
-    race_ids = ["2023_Monza", "2023_Spain", "2023_Singapore"]
+    """Fit + print the degradation table for every processed race CSV."""
+    race_ids = sorted(p.stem for p in PROCESSED_DIR.glob("*.csv"))
+    if not race_ids:
+        print(f"No processed races in {PROCESSED_DIR} - run fetch_race_data first")
+        return
     header = (
-        f"{'race':<16}{'compound':<10}{'base_pace':>10}{'deg_rate':>10}{'fuel_rate':>11}"
+        f"{'race':<18}{'compound':<10}{'base_pace':>10}{'deg_rate':>10}{'fuel_rate':>11}"
         f"{'n_laps':>8}{'floored':>9}{'confidence':>12}"
     )
     print(header)
@@ -213,10 +216,10 @@ def main() -> None:
         model = build_degradation_model(race_id)
         for compound, m in model.compounds.items():
             if m is None:
-                print(f"{race_id:<16}{compound:<10}{'None (insufficient data)':>39}")
+                print(f"{race_id:<18}{compound:<10}{'None (insufficient data)':>39}")
             else:
                 print(
-                    f"{race_id:<16}{compound:<10}{m.base_pace:>10.3f}{m.deg_rate:>10.4f}"
+                    f"{race_id:<18}{compound:<10}{m.base_pace:>10.3f}{m.deg_rate:>10.4f}"
                     f"{m.fuel_rate:>11.4f}{m.n_laps:>8}{m.was_floored!s:>9}{m.confidence:>12}"
                 )
         print("-" * len(header))

@@ -5,7 +5,7 @@ degradation model + Monte Carlo engine, drops unrepresentative in/out laps, and
 persists a tidy CSV per race to ``data/processed/{year}_{gp}.csv`` so the rest of
 the app never needs FastF1 (or a network connection) at runtime.
 
-Run directly to (re)generate the three reference races from the spec:
+Run directly to (re)generate every race in ``REFERENCE_RACES``:
 
     python -m app.data.fetch_race_data
 """
@@ -46,12 +46,16 @@ LAP_COLUMNS = [
     "TrackStatus",
 ]
 
-# The three reference races (year, gp). ``gp`` is used both for FastF1's fuzzy
-# event lookup and for the output filename, so keep it a single clean token.
+# Races to persist (year, gp). ``gp`` is used both for FastF1's fuzzy event
+# lookup and for the output filename, so keep it a single clean token.
 REFERENCE_RACES: list[tuple[int, str]] = [
-    (2023, "Monza"),      # low deg, low SC probability
-    (2023, "Spain"),      # high deg, medium SC probability
-    (2023, "Singapore"),  # high SC probability, street circuit
+    (2023, "Monza"),        # low deg, low SC probability
+    (2023, "Spain"),        # high deg, medium SC probability
+    (2023, "Singapore"),    # high SC probability, street circuit
+    (2023, "Bahrain"),      # season opener, hot, medium-high deg
+    (2023, "Silverstone"),  # high-speed, medium deg, low SC
+    (2023, "Suzuka"),       # high-speed/technical, different deg character
+    (2023, "Baku"),         # street circuit contrast vs Singapore (shorter lap, different SC)
 ]
 
 # Timedelta columns we convert to float seconds on the way out to CSV so the

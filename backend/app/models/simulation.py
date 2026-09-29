@@ -318,34 +318,44 @@ def _race_laps_from_csv(race_id: str) -> tuple[int, pd.DataFrame]:
     return int(laps["LapNumber"].max()), laps
 
 
-def _demo_scenarios() -> dict[str, list[Strategy]]:
-    """A couple of hand-picked strategies per race for the sanity-check run."""
-    return {
-        "2023_Monza": [
-            Strategy("1-stop early(26)", "MEDIUM", [PitStop(26, "HARD")]),
-            Strategy("1-stop late(32)", "MEDIUM", [PitStop(32, "HARD")]),
-            Strategy("2-stop M-H-H", "MEDIUM", [PitStop(18, "HARD"), PitStop(36, "HARD")]),
-        ],
-        "2023_Spain": [
-            Strategy("1-stop early(30)", "MEDIUM", [PitStop(30, "HARD")]),
-            Strategy("1-stop late(38)", "MEDIUM", [PitStop(38, "HARD")]),
-            Strategy("2-stop S-M-H", "SOFT", [PitStop(20, "MEDIUM"), PitStop(44, "HARD")]),
-        ],
-        "2023_Singapore": [
-            Strategy("1-stop early(28)", "HARD", [PitStop(28, "MEDIUM")]),
-            Strategy("1-stop late(34)", "HARD", [PitStop(34, "MEDIUM")]),
-            Strategy("2-stop H-M-H", "HARD", [PitStop(20, "MEDIUM"), PitStop(42, "HARD")]),
-        ],
-    }
+def _processed_race_ids() -> list[str]:
+    return sorted(p.stem for p in PROCESSED_DIR.glob("*.csv"))
+
+
+def _clamp_pit_lap(lap: float, race_laps: int) -> int:
+    return max(1, min(race_laps - 1, round(lap)))
+
+
+def _demo_strategies(model: DegradationModel, race_laps: int) -> list[Strategy]:
+    """Build a 1-stop / 2-stop pair from whatever compounds this race actually has."""
+    usable = model.usable_compounds()
+    if len(usable) < 2:
+        return []
+    c0, c1 = usable[0], usable[1]
+    return [
+        Strategy("1-stop", c0, [PitStop(_clamp_pit_lap(race_laps / 2, race_laps), c1)]),
+        Strategy(
+            "2-stop",
+            c0,
+            [
+                PitStop(_clamp_pit_lap(race_laps / 3, race_laps), c1),
+                PitStop(_clamp_pit_lap((2 * race_laps) / 3, race_laps), c0),
+            ],
+        ),
+    ]
 
 
 def main() -> None:
     from app.models.degradation import build_degradation_model
 
     seed = 20230914
-    for race_id, strategies in _demo_scenarios().items():
+    for race_id in _processed_race_ids():
         race_laps, laps = _race_laps_from_csv(race_id)
         model = build_degradation_model(race_id)
+        strategies = _demo_strategies(model, race_laps)
+        if len(strategies) < 2:
+            print(f"{race_id}: skip demo - need two usable compounds, got {model.usable_compounds()}")
+            continue
         pit_loss = load_pit_loss(race_id)
         sc_prob = estimate_sc_probability(laps)
 

@@ -6,10 +6,9 @@ import httpx
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.models.degradation import PROCESSED_DIR
 
 client = TestClient(app)
-
-EXPECTED_RACES = {"2023_Monza", "2023_Spain", "2023_Singapore"}
 
 # The Monza 1-stop vs 2-stop strategies from the Phase 3 end-to-end run.
 MONZA_STRATEGIES = [
@@ -22,11 +21,13 @@ MONZA_STRATEGIES = [
 ]
 
 
-def test_list_races_returns_three_known_races():
+def test_list_races_matches_processed_csvs():
     resp = client.get("/races")
     assert resp.status_code == 200
     body = resp.json()
-    assert {r["id"] for r in body} == EXPECTED_RACES
+    expected = {p.stem for p in PROCESSED_DIR.glob("*.csv")}
+    assert expected, "no processed race CSVs found"
+    assert {r["id"] for r in body} == expected
     monza = next(r for r in body if r["id"] == "2023_Monza")
     assert monza["year"] == 2023
     assert monza["gp"] == "Monza"
